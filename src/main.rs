@@ -6,7 +6,7 @@ use task::*;
 #[component]
 fn App() -> impl IntoView {
     let list = move || {
-        (1..=5)
+        (1..=10)
             .map(|i| Task::new(format!("Row {}", i)))
             .collect::<Vec<_>>()
     };
