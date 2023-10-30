@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use leptos::*;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
     pub id: Uuid,
     pub text: String,
+    pub done: RwSignal<bool>,
 }
 
 impl Task {
@@ -12,6 +14,7 @@ impl Task {
         Self {
             id: Uuid::new_v4(),
             text,
+            done: create_rw_signal(false),
         }
     }
 }

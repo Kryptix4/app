@@ -6,4 +6,8 @@ edition = "2021"
 [dependencies]
 leptos = { version = "0.5.1", features = ["csr", "nightly"] }
 serde = "1.0.189"
-uuid = { version = "1.5.0", features = ["wasm-bindgen", "v4", "js", "serde"] }
+uuid = { version = "1", features = ["v4", "js", "serde"] }
+
+[package.metadata.leptos.style]
+file = "style/style.css"
+browserquery = "defaults"
