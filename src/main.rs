@@ -60,8 +60,7 @@ fn App() -> impl IntoView {
                     type="checkbox"
                     prop:checked=task.done
                     on:input={move |ev| {
-                        let checked = event_target_checked(&ev);
-                        task.done.set(checked);
+                        task.done.set(event_target_checked(&ev));
                     }}
                 />
 
