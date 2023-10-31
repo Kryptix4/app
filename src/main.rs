@@ -1,92 +1,78 @@
 use leptos::{html::Input, *};
 
-mod task;
-use task::*;
-
-mod list;
-use list::List;
+mod components;
+use components::*;
 
 #[component]
 fn App() -> impl IntoView {
     let (tasks, set_tasks) = create_signal(List::new());
 
-    provide_context(set_tasks);
+    let input_node = create_node_ref::<Input>();
 
-    let input_ref = create_node_ref::<Input>();
-    let add_todo = move |event: web_sys::KeyboardEvent| {
-        let input = input_ref.get().unwrap();
-        let key_code = event.key_code();
-        event.stop_propagation();
-
-        const ENTER_KEY: u32 = 13;
-        if key_code == ENTER_KEY {
-            let text = input.value();
-            let text = text.trim();
-
-            if !text.is_empty() {
-                set_tasks.update(|list| list.add(Task::new(text.to_string())));
-            }
-
-            input.set_value("");
-        }
+    let get_input = move || {
+        input_node.get().unwrap().value()
     };
 
     view! {
-        <header>
-            <h1>Active Tasks:</h1>
-            <input
-                placeholder="Input task"
-                autofocus
-                on:keydown=add_todo
-                node_ref=input_ref
-            />
-            <button
-                on:click=move |_| {
-                    let text = input_ref.get().unwrap().value();
-                    let text = text.trim();
+        <h1>Active Tasks:</h1>
 
-                    if !text.is_empty() {
-                        set_tasks.update(|list| list.add(Task::new(text.to_string())));
-                    }
+        <input
+            placeholder="Input task"
+            autofocus
+            node_ref=input_node
+        />
 
-                    input_ref.get().unwrap().set_value("");
-                }
-            >
-                "Add task"
-            </button>
-            <button
-                on:click=move |_| set_tasks.update(|list| list.clear_done())
-            >
-                "Clear done"
-            </button>
-        </header>
-        <section>
-            <For
-                each=move || tasks().0
-                key=move |task| task.id
-                children=move |task| {
-                    let todo_input = create_node_ref::<Input>();
+        <button on:click=move |_| set_tasks.update(|list| {
+            let text = get_input();
 
-                    view!{
-                        <div>
-                        <input
-                            node_ref=todo_input
-                            class="toggle"
-                            type="checkbox"
-                            prop:checked=task.done
-                            on:input={move |ev| {
-                                let checked = event_target_checked(&ev);
-                                task.done.set(checked);
-                            }}
-                        />
-                        <p>{task.text}</p>
-                        </div>
-                    }
-                }
-            />
-        </section>
-        <footer>
-        </footer>
+            if !text.is_empty() {
+                list.add(text.trim());
+            }
+        })>Add task</button>
+
+        <button on:click=move |_| set_tasks.update(|list| {
+            let text = get_input();
+
+            if !text.is_empty() {
+                list.remove(text.trim());
+            }
+        })>Remove task</button>
+
+        <br/>
+
+        <button on:click=move |_| set_tasks.update(|list| {
+            list.0.clear();
+        })>Clear all</button>
+
+        <button on:click=move |_| set_tasks.update(|list| {
+            list.clear_completed();
+        })>Clear completed</button>
+
+        <For each=move || tasks().0 key=move |task| task.id children=move |task| {
+            let todo_input = create_node_ref::<Input>();
+            let text = task.text.clone();
+
+            view! {
+                <div>
+                <input
+                    node_ref=todo_input
+                    class="toggle"
+                    type="checkbox"
+                    prop:checked=task.done
+                    on:input={move |ev| {
+                        let checked = event_target_checked(&ev);
+                        task.done.set(checked);
+                    }}
+                />
+
+                <p>{text}</p>
+
+                <button on:click=move |_| set_tasks.update(|list| {
+                    list.remove(task.text.clone());
+                })>Remove</button>
+                </div>
+            }
+        }/>
     }
 }
 
